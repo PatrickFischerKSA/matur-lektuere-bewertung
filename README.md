@@ -35,6 +35,19 @@ npm test
 
 Die Tests prüfen die Punkte- und Notenberechnung, Rundung, Validierung und das Einfügen von Kommentarbausteinen.
 
+## Deployment auf Render
+
+Wenn Render beim Anlegen meldet, dass `matur-lektuere-bewertung` bereits vergeben ist, muss der Service einen eindeutigen Namen erhalten. Dieses Repository enthält dafür `render.yaml` mit dem Namen `matur-lektuere-bewertung-app`.
+
+Manuelles Setup auf Render:
+
+- Name: `matur-lektuere-bewertung-app` oder ein anderer eindeutiger Name
+- Runtime: `Node`
+- Branch: `main`
+- Build Command: `npm ci && npm run build`
+- Start Command: `npm run start`
+- Environment Variable: `NODE_VERSION=22`
+
 ## Projektstruktur
 
 ```text
