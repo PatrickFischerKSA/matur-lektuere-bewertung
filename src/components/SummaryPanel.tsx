@@ -7,7 +7,8 @@ type SummaryPanelProps = {
   grade: number;
   completedCriteria: number;
   validationErrors: string[];
-  onReset: () => void;
+  onClear: () => void;
+  onExportWord: () => void;
 };
 
 export function SummaryPanel({
@@ -15,7 +16,8 @@ export function SummaryPanel({
   grade,
   completedCriteria,
   validationErrors,
-  onReset
+  onClear,
+  onExportWord
 }: SummaryPanelProps) {
   return (
     <aside className="sticky top-5 rounded-lg border border-ink/10 bg-white p-5 shadow-soft">
@@ -71,13 +73,22 @@ export function SummaryPanel({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onReset}
-        className="mt-5 w-full rounded-md border border-ink/15 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-clay hover:text-clay"
-      >
-        Neue leere Bewertung
-      </button>
+      <div className="mt-5 grid gap-3">
+        <button
+          type="button"
+          onClick={onExportWord}
+          className="w-full rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink/90"
+        >
+          Word-Dokument exportieren
+        </button>
+        <button
+          type="button"
+          onClick={onClear}
+          className="w-full rounded-md border border-ink/15 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-clay hover:text-clay"
+        >
+          Clear
+        </button>
+      </div>
     </aside>
   );
 }

@@ -14,6 +14,7 @@ import {
   validateAssessment
 } from "@/lib/scoring";
 import type { AssessmentDraft } from "@/lib/types";
+import { buildWordDocumentHtml, createWordExportFilename } from "@/lib/wordExport";
 
 const storageKey = "matur-lektuere-bewertung:v1";
 
@@ -48,6 +49,25 @@ export default function Home() {
     [draft.scores]
   );
   const validationErrors = useMemo(() => validateAssessment(draft), [draft]);
+
+  const handleClear = () => {
+    const nextDraft = createEmptyDraft();
+    setDraft(nextDraft);
+    window.localStorage.setItem(storageKey, JSON.stringify(nextDraft));
+  };
+
+  const handleWordExport = () => {
+    const documentHtml = buildWordDocumentHtml(draft, totalPoints, grade);
+    const blob = new Blob([documentHtml], { type: "application/msword;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = window.document.createElement("a");
+    link.href = url;
+    link.download = createWordExportFilename(draft);
+    window.document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <main className="min-h-screen px-4 py-5 sm:px-6 lg:px-8">
@@ -113,11 +133,8 @@ export default function Home() {
               grade={grade}
               completedCriteria={completedCriteria}
               validationErrors={validationErrors}
-              onReset={() => {
-                const nextDraft = createEmptyDraft();
-                setDraft(nextDraft);
-                window.localStorage.setItem(storageKey, JSON.stringify(nextDraft));
-              }}
+              onClear={handleClear}
+              onExportWord={handleWordExport}
             />
           </div>
         </div>
