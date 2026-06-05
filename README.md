@@ -35,18 +35,23 @@ npm test
 
 Die Tests prüfen die Punkte- und Notenberechnung, Rundung, Validierung und das Einfügen von Kommentarbausteinen.
 
-## Deployment auf Render
+## Deployment auf Vercel
 
-Wenn Render beim Anlegen meldet, dass `matur-lektuere-bewertung` bereits vergeben ist, muss der Service einen eindeutigen Namen erhalten. Dieses Repository enthält dafür `render.yaml` mit dem Namen `matur-lektuere-bewertung-app`.
+Die Anwendung ist jetzt fuer Vercel vorbereitet. Laut Vercel funktioniert Next.js dort in der Regel zero-config; dieses Repository legt die wichtigen Werte trotzdem explizit fest:
 
-Manuelles Setup auf Render:
+- Framework: `Next.js`
+- Install Command: `npm ci`
+- Build Command: `npm run build`
+- Node.js-Version: `22.x`
+- keine benoetigten Umgebungsvariablen
 
-- Name: `matur-lektuere-bewertung-app` oder ein anderer eindeutiger Name
-- Runtime: `Node`
-- Branch: `main`
-- Build Command: `npm ci && npm run build`
-- Start Command: `npm run start`
-- Environment Variable: `NODE_VERSION=22`
+Praktisches Setup auf Vercel:
+
+1. Repository in Vercel importieren
+2. Framework-Preset `Next.js` bestaetigen
+3. Deployment starten
+
+Die Konfiguration liegt in `vercel.json`, die Node-Version zusaetzlich in `package.json` und `.nvmrc`.
 
 ## Projektstruktur
 
