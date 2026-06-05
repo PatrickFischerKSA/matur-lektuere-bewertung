@@ -22,6 +22,23 @@ describe("Punkte- und Notenberechnung", () => {
     expect(getCompletedCriteriaCount(scores)).toBe(3);
   });
 
+  it("kann eine Variante ohne Reflexionskriterium separat auswerten", () => {
+    const scores: ScoreMap = {
+      ...createEmptyScores(),
+      textkenntnis: 4,
+      deutung: 3,
+      idee: 2,
+      ausarbeitung: 1,
+      reflexion: 4
+    };
+
+    expect(calculateTotalPoints(scores, ["textkenntnis", "deutung", "idee", "ausarbeitung"])).toBe(10);
+    expect(
+      getCompletedCriteriaCount(scores, ["textkenntnis", "deutung", "idee", "ausarbeitung"])
+    ).toBe(4);
+    expect(calculateGrade(10, 16)).toBe(4.1);
+  });
+
   it("berechnet die Note mit der Formel Punkte / 20 * 5 + 1", () => {
     expect(calculateGrade(20)).toBe(6.0);
     expect(calculateGrade(18)).toBe(5.5);
@@ -54,9 +71,25 @@ describe("Validierung und Kommentare", () => {
         "Klasse fehlt.",
         "Titel der Lektüre fehlt.",
         "Autorin oder Autor fehlt.",
-        "Alle fünf Kriterien brauchen eine Punktestufe."
+        "Alle 5 Kriterien brauchen eine Punktestufe."
       ])
     );
+  });
+
+  it("validiert die 4-Kriterien-Variante ohne Reflexionskriterium korrekt", () => {
+    const draft = createEmptyDraft();
+    draft.meta.studentName = "Lea";
+    draft.meta.className = "4a";
+    draft.meta.readingTitle = "Homo Faber";
+    draft.meta.author = "Max Frisch";
+    draft.scores.textkenntnis = 4;
+    draft.scores.deutung = 3;
+    draft.scores.idee = 2;
+    draft.scores.ausarbeitung = 1;
+
+    expect(
+      validateAssessment(draft, ["textkenntnis", "deutung", "idee", "ausarbeitung"])
+    ).toEqual([]);
   });
 
   it("validiert das freie Formatfeld", () => {

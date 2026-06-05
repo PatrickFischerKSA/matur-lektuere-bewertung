@@ -13,6 +13,7 @@ Eine kleine Next.js-Webanwendung für Lehrpersonen, die kreative Lernprodukte zu
 - Kommentarbausteine in drei Kategorien
 - lokale Speicherung im Browser mit `localStorage`
 - keine Anmeldung, keine externe Datenbank, keine kostenpflichtigen Dienste
+- zweite Variante ohne letztes Reflexionskriterium unter `/ohne-reflexion`
 
 ## Grundsatz
 
@@ -40,7 +41,7 @@ Die Tests prüfen die Punkte- und Notenberechnung, Rundung, Validierung und das 
 Die Anwendung ist jetzt fuer Vercel vorbereitet. Laut Vercel funktioniert Next.js dort in der Regel zero-config; dieses Repository legt die wichtigen Werte trotzdem explizit fest:
 
 - Framework: `Next.js`
-- Install Command: `npm ci`
+- Install Command: `npm install`
 - Build Command: `npm run build`
 - Node.js-Version: `22.x`
 - keine benoetigten Umgebungsvariablen
@@ -52,6 +53,11 @@ Praktisches Setup auf Vercel:
 3. Deployment starten
 
 Die Konfiguration liegt in `vercel.json`, die Node-Version zusaetzlich in `package.json` und `.nvmrc`.
+
+## Varianten
+
+- `/` Standardtool mit fünf Kriterien
+- `/ohne-reflexion` identische Variante ohne das letzte Reflexionskriterium
 
 ## Projektstruktur
 

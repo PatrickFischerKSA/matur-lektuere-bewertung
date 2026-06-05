@@ -1,9 +1,11 @@
 "use client";
 
-import { gradeScale } from "@/lib/rubric";
+import { calculateGrade } from "@/lib/scoring";
 
 type SummaryPanelProps = {
   totalPoints: number;
+  maxPoints: number;
+  totalCriteria: number;
   grade: number;
   completedCriteria: number;
   validationErrors: string[];
@@ -13,19 +15,28 @@ type SummaryPanelProps = {
 
 export function SummaryPanel({
   totalPoints,
+  maxPoints,
+  totalCriteria,
   grade,
   completedCriteria,
   validationErrors,
   onClear,
   onExportWord
 }: SummaryPanelProps) {
+  const scaleRows = Array.from({ length: 7 }, (_, index) => maxPoints - index * 2)
+    .filter((points) => points >= 0)
+    .map((points) => ({
+      points,
+      grade: calculateGrade(points, maxPoints)
+    }));
+
   return (
     <aside className="sticky top-5 rounded-lg border border-ink/10 bg-white p-5 shadow-soft">
       <h2 className="section-title">Gesamtberechnung</h2>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-md bg-ink p-4 text-white">
           <div className="text-sm text-white/70">Punkte</div>
-          <div className="mt-1 text-3xl font-bold">{totalPoints}/20</div>
+          <div className="mt-1 text-3xl font-bold">{totalPoints}/{maxPoints}</div>
         </div>
         <div className="rounded-md bg-clay p-4 text-white">
           <div className="text-sm text-white/75">Note</div>
@@ -33,7 +44,7 @@ export function SummaryPanel({
         </div>
       </div>
       <div className="mt-3 rounded-md bg-paper p-3 text-sm text-ink/70">
-        {completedCriteria} von 5 Kriterien bewertet.
+        {completedCriteria} von {totalCriteria} Kriterien bewertet.
       </div>
 
       <div className="mt-5">
@@ -47,7 +58,7 @@ export function SummaryPanel({
               </tr>
             </thead>
             <tbody>
-              {gradeScale.map((row) => (
+              {scaleRows.map((row) => (
                 <tr key={row.points} className="border-t border-ink/10">
                   <td className="px-3 py-2">{row.points}</td>
                   <td className="px-3 py-2">{row.grade.toFixed(1)}</td>

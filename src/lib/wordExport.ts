@@ -1,4 +1,5 @@
 import { rubricCriteria } from "./rubric";
+import type { RubricCriterion } from "./rubric";
 import type { AssessmentDraft } from "./types";
 
 function escapeHtml(value: string): string {
@@ -45,9 +46,18 @@ export function createWordExportFilename(draft: AssessmentDraft): string {
 export function buildWordDocumentHtml(
   draft: AssessmentDraft,
   totalPoints: number,
-  grade: number
+  grade: number,
+  options?: {
+    criteria?: RubricCriterion[];
+    maxPoints?: number;
+    documentTitle?: string;
+  }
 ): string {
-  const criterionMarkup = rubricCriteria.map((criterion) => {
+  const criteria = options?.criteria || rubricCriteria;
+  const maximum = options?.maxPoints || 20;
+  const documentTitle = options?.documentTitle || "Maturlektüre-Bewertung";
+
+  const criterionMarkup = criteria.map((criterion) => {
     const score = draft.scores[criterion.id];
     const comment = draft.criterionComments[criterion.id];
 
@@ -65,7 +75,7 @@ export function buildWordDocumentHtml(
     <html lang="de">
       <head>
         <meta charset="utf-8">
-        <title>Bewertung ${escapeHtml(draft.meta.studentName || "")}</title>
+        <title>${escapeHtml(documentTitle)} ${escapeHtml(draft.meta.studentName || "")}</title>
         <style>
           body {
             font-family: Arial, Helvetica, sans-serif;
@@ -116,7 +126,7 @@ export function buildWordDocumentHtml(
         </style>
       </head>
       <body>
-        <h1>Maturlektüre-Bewertung</h1>
+        <h1>${escapeHtml(documentTitle)}</h1>
         <table>
           <tr><th>Name</th><td>${escapeHtml(draft.meta.studentName || "-")}</td></tr>
           <tr><th>Klasse</th><td>${escapeHtml(draft.meta.className || "-")}</td></tr>
@@ -128,7 +138,7 @@ export function buildWordDocumentHtml(
         </table>
 
         <div class="summary-box">
-          <p><strong>Gesamtpunkte:</strong> ${totalPoints}/20</p>
+          <p><strong>Gesamtpunkte:</strong> ${totalPoints}/${maximum}</p>
           <p><strong>Note:</strong> ${grade.toFixed(1)}</p>
         </div>
 

@@ -1,9 +1,14 @@
-import type { AssessmentDraft, ScoreMap } from "./types";
+import { rubricCriteria } from "./rubric";
+import type { AssessmentDraft, CriterionId, ScoreMap } from "./types";
 
 export const maxPoints = 20;
+const allCriterionIds = rubricCriteria.map((criterion) => criterion.id);
 
-export function calculateTotalPoints(scores: ScoreMap): number {
-  return Object.values(scores).reduce<number>((sum, score) => sum + (score ?? 0), 0);
+export function calculateTotalPoints(
+  scores: ScoreMap,
+  criteria: CriterionId[] = allCriterionIds
+): number {
+  return criteria.reduce<number>((sum, criterionId) => sum + (scores[criterionId] ?? 0), 0);
 }
 
 export function calculateGrade(points: number, maximum = maxPoints): number {
@@ -17,11 +22,17 @@ export function calculateGrade(points: number, maximum = maxPoints): number {
   return Math.round(rawGrade * 10) / 10;
 }
 
-export function getCompletedCriteriaCount(scores: ScoreMap): number {
-  return Object.values(scores).filter((score) => score !== null).length;
+export function getCompletedCriteriaCount(
+  scores: ScoreMap,
+  criteria: CriterionId[] = allCriterionIds
+): number {
+  return criteria.filter((criterionId) => scores[criterionId] !== null).length;
 }
 
-export function validateAssessment(draft: AssessmentDraft): string[] {
+export function validateAssessment(
+  draft: AssessmentDraft,
+  criteria: CriterionId[] = allCriterionIds
+): string[] {
   const errors: string[] = [];
 
   if (!draft.meta.studentName.trim()) {
@@ -48,8 +59,8 @@ export function validateAssessment(draft: AssessmentDraft): string[] {
     errors.push("Datum der Bewertung fehlt.");
   }
 
-  if (getCompletedCriteriaCount(draft.scores) < 5) {
-    errors.push("Alle fünf Kriterien brauchen eine Punktestufe.");
+  if (getCompletedCriteriaCount(draft.scores, criteria) < criteria.length) {
+    errors.push(`Alle ${criteria.length} Kriterien brauchen eine Punktestufe.`);
   }
 
   return errors;
