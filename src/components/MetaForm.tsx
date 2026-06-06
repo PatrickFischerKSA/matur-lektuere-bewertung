@@ -1,14 +1,14 @@
 "use client";
 
-import { productForms } from "@/lib/rubric";
-import type { AssessmentMeta, ProductForm } from "@/lib/types";
+import type { AssessmentMeta, MetaFieldConfig, ProductForm } from "@/lib/types";
 
 type MetaFormProps = {
   meta: AssessmentMeta;
+  config: MetaFieldConfig;
   onChange: (meta: AssessmentMeta) => void;
 };
 
-export function MetaForm({ meta, onChange }: MetaFormProps) {
+export function MetaForm({ meta, config, onChange }: MetaFormProps) {
   const update = <K extends keyof AssessmentMeta>(key: K, value: AssessmentMeta[K]) => {
     onChange({ ...meta, [key]: value });
   };
@@ -19,7 +19,7 @@ export function MetaForm({ meta, onChange }: MetaFormProps) {
         <div>
           <h2 className="section-title">Neue Bewertung</h2>
           <p className="mt-1 text-sm text-ink/65">
-            Stammdaten und Produktform für diese Rückmeldung.
+            {config.intro}
           </p>
         </div>
       </div>
@@ -44,49 +44,52 @@ export function MetaForm({ meta, onChange }: MetaFormProps) {
           />
         </label>
         <label>
-          <span className="field-label">Titel der Lektüre</span>
+          <span className="field-label">{config.readingTitleLabel}</span>
           <input
             className="field"
             value={meta.readingTitle}
             onChange={(event) => update("readingTitle", event.target.value)}
-            placeholder="Werk"
+            placeholder={config.readingTitlePlaceholder}
           />
         </label>
         <label>
-          <span className="field-label">Autorin oder Autor</span>
+          <span className="field-label">{config.authorLabel}</span>
           <input
             className="field"
             value={meta.author}
             onChange={(event) => update("author", event.target.value)}
-            placeholder="Name"
+            placeholder={config.authorPlaceholder}
           />
         </label>
+        {config.hideProductForm ? null : (
+          <label>
+            <span className="field-label">{config.productFormLabel}</span>
+            <select
+              className="field"
+              value={meta.productForm}
+              disabled={config.productFormLocked}
+              onChange={(event) => update("productForm", event.target.value as ProductForm)}
+            >
+              {config.productFormOptions.map((form) => (
+                <option key={form} value={form}>
+                  {form}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label>
-          <span className="field-label">Produktform</span>
-          <select
-            className="field"
-            value={meta.productForm}
-            onChange={(event) => update("productForm", event.target.value as ProductForm)}
-          >
-            {productForms.map((form) => (
-              <option key={form} value={form}>
-                {form}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span className="field-label">Titel des Lernprodukts</span>
+          <span className="field-label">{config.productTitleLabel}</span>
           <input
             className="field"
             value={meta.productTitle}
             onChange={(event) => update("productTitle", event.target.value)}
-            placeholder="optional"
+            placeholder={config.productTitlePlaceholder}
           />
         </label>
         {meta.productForm === "anderes Format" ? (
           <label>
-            <span className="field-label">Anderes Format</span>
+            <span className="field-label">{config.customProductFormLabel}</span>
             <input
               className="field"
               value={meta.customProductForm}

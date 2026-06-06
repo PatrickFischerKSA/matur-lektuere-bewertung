@@ -14,6 +14,7 @@ Eine kleine Next.js-Webanwendung für Lehrpersonen, die kreative Lernprodukte zu
 - lokale Speicherung im Browser mit `localStorage`
 - keine Anmeldung, keine externe Datenbank, keine kostenpflichtigen Dienste
 - zweite Variante ohne letztes Reflexionskriterium unter `/ohne-reflexion`
+- eigene Videoreportage-Abteilung mit den Varianten `/videoreportage/deutsch` und `/videoreportage/kommunikation`
 
 ## Grundsatz
 
@@ -56,8 +57,12 @@ Die Konfiguration liegt in `vercel.json`, die Node-Version zusaetzlich in `packa
 
 ## Varianten
 
+- `Maturlektüre`
 - `/` Standardtool mit fünf Kriterien
 - `/ohne-reflexion` identische Variante ohne das letzte Reflexionskriterium
+- `Videoreportage`
+- `/videoreportage/deutsch` Rubrik für Inhalt, Recherche, Aufbau, Sprache und Eigenständigkeit im Fach Deutsch
+- `/videoreportage/kommunikation` Rubrik für Bild, Ton, Schnitt, Wirkung und Zusammenarbeit im Fach Kommunikation
 
 ## Projektstruktur
 

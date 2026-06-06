@@ -1,6 +1,6 @@
 "use client";
 
-import { commentBlocks, type RubricCriterion } from "@/lib/rubric";
+import type { CommentBlockCatalog, RubricCriterion } from "@/lib/rubric";
 import { appendComment } from "@/lib/scoring";
 import type { RubricScore } from "@/lib/types";
 
@@ -8,6 +8,7 @@ type RubricCardProps = {
   criterion: RubricCriterion;
   score: RubricScore | null;
   comment: string;
+  commentBlocks: CommentBlockCatalog;
   onScoreChange: (score: RubricScore) => void;
   onCommentChange: (comment: string) => void;
 };
@@ -16,6 +17,7 @@ export function RubricCard({
   criterion,
   score,
   comment,
+  commentBlocks,
   onScoreChange,
   onCommentChange
 }: RubricCardProps) {
@@ -24,11 +26,11 @@ export function RubricCard({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <h3 className="text-lg font-semibold text-ink">{criterion.title}</h3>
         <div className="w-fit rounded-md bg-paper px-3 py-1 text-sm font-semibold text-ink/75">
-          {score ? `${score} Punkte` : "offen"}
+          {score !== null ? `${score} Punkte` : "offen"}
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {criterion.levels.map((level) => {
           const selected = score === level.score;
 

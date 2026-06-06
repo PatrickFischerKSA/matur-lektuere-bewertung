@@ -1,6 +1,6 @@
 import { rubricCriteria } from "./rubric";
 import type { RubricCriterion } from "./rubric";
-import type { AssessmentDraft } from "./types";
+import type { AssessmentDraft, FeedbackPrompt, MetaFieldLabels } from "./types";
 
 function escapeHtml(value: string): string {
   return value
@@ -27,6 +27,21 @@ function productFormLabel(draft: AssessmentDraft): string {
   return draft.meta.productForm;
 }
 
+const defaultMetaLabels: MetaFieldLabels = {
+  readingTitle: "Lektüre",
+  author: "Autorin / Autor",
+  productForm: "Produktform",
+  productTitle: "Produkttitel",
+  customProductForm: "Anderes Format"
+};
+
+const defaultFeedbackPrompts: FeedbackPrompt[] = [
+  { key: "staerken", label: "Stärken" },
+  { key: "lesart", label: "Lesart / Vertiefung" },
+  { key: "gewinn", label: "Gewinn der Form" },
+  { key: "gesamteindruck", label: "Gesamteindruck" }
+];
+
 function safeFileSegment(value: string): string {
   return value
     .trim()
@@ -51,11 +66,15 @@ export function buildWordDocumentHtml(
     criteria?: RubricCriterion[];
     maxPoints?: number;
     documentTitle?: string;
+    metaLabels?: MetaFieldLabels;
+    feedbackPrompts?: FeedbackPrompt[];
   }
 ): string {
   const criteria = options?.criteria || rubricCriteria;
   const maximum = options?.maxPoints || 20;
   const documentTitle = options?.documentTitle || "Maturlektüre-Bewertung";
+  const metaLabels = options?.metaLabels || defaultMetaLabels;
+  const feedbackPrompts = options?.feedbackPrompts || defaultFeedbackPrompts;
 
   const criterionMarkup = criteria.map((criterion) => {
     const score = draft.scores[criterion.id];
@@ -130,10 +149,10 @@ export function buildWordDocumentHtml(
         <table>
           <tr><th>Name</th><td>${escapeHtml(draft.meta.studentName || "-")}</td></tr>
           <tr><th>Klasse</th><td>${escapeHtml(draft.meta.className || "-")}</td></tr>
-          <tr><th>Lektüre</th><td>${escapeHtml(draft.meta.readingTitle || "-")}</td></tr>
-          <tr><th>Autorin / Autor</th><td>${escapeHtml(draft.meta.author || "-")}</td></tr>
-          <tr><th>Produktform</th><td>${escapeHtml(productFormLabel(draft))}</td></tr>
-          <tr><th>Produkttitel</th><td>${escapeHtml(draft.meta.productTitle || "-")}</td></tr>
+          <tr><th>${escapeHtml(metaLabels.readingTitle)}</th><td>${escapeHtml(draft.meta.readingTitle || "-")}</td></tr>
+          <tr><th>${escapeHtml(metaLabels.author)}</th><td>${escapeHtml(draft.meta.author || "-")}</td></tr>
+          <tr><th>${escapeHtml(metaLabels.productForm)}</th><td>${escapeHtml(productFormLabel(draft))}</td></tr>
+          <tr><th>${escapeHtml(metaLabels.productTitle)}</th><td>${escapeHtml(draft.meta.productTitle || "-")}</td></tr>
           <tr><th>Bewertungsdatum</th><td>${escapeHtml(draft.meta.assessmentDate || "-")}</td></tr>
         </table>
 
@@ -146,22 +165,12 @@ export function buildWordDocumentHtml(
         ${criterionMarkup}
 
         <h2>Gesamtfeedback</h2>
-        <section class="criterion">
-          <h3>Stärken</h3>
-          <p>${formatMultiline(draft.feedback.staerken)}</p>
-        </section>
-        <section class="criterion">
-          <h3>Lesart / Vertiefung</h3>
-          <p>${formatMultiline(draft.feedback.lesart)}</p>
-        </section>
-        <section class="criterion">
-          <h3>Gewinn der Form</h3>
-          <p>${formatMultiline(draft.feedback.gewinn)}</p>
-        </section>
-        <section class="criterion">
-          <h3>Gesamteindruck</h3>
-          <p>${formatMultiline(draft.feedback.gesamteindruck)}</p>
-        </section>
+        ${feedbackPrompts.map((prompt) => `
+          <section class="criterion">
+            <h3>${escapeHtml(prompt.label.replace(/:$/, ""))}</h3>
+            <p>${formatMultiline(draft.feedback[prompt.key])}</p>
+          </section>
+        `).join("")}
       </body>
     </html>
   `;

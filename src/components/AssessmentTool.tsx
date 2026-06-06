@@ -7,7 +7,6 @@ import { MetaForm } from "@/components/MetaForm";
 import { RubricCard } from "@/components/RubricCard";
 import { SummaryPanel } from "@/components/SummaryPanel";
 import { createEmptyDraft } from "@/lib/defaultDraft";
-import { rubricCriteria } from "@/lib/rubric";
 import {
   calculateGrade,
   calculateTotalPoints,
@@ -23,14 +22,33 @@ type AssessmentToolProps = {
 };
 
 export function AssessmentTool({ variant }: AssessmentToolProps) {
-  const [draft, setDraft] = useState<AssessmentDraft>(() => createEmptyDraft());
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  const visibleCriteria = useMemo(
-    () => rubricCriteria.filter((criterion) => variant.criteria.includes(criterion.id)),
+  const criterionIds = useMemo(
+    () => variant.criteria.map((criterion) => criterion.id),
     [variant.criteria]
   );
-  const maxPoints = variant.criteria.length * 4;
+  const [draft, setDraft] = useState<AssessmentDraft>(() =>
+    createEmptyDraft(criterionIds, {
+      productForm: variant.metaConfig.productFormOptions[0]
+    })
+  );
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  const maxPoints = useMemo(
+    () =>
+      variant.criteria.reduce(
+        (sum, criterion) => sum + Math.max(...criterion.levels.map((level) => level.score)),
+        0
+      ),
+    [variant.criteria]
+  );
+  const variantsByDepartment = useMemo(
+    () =>
+      allVariants.reduce<Record<string, ToolVariant[]>>((groups, entry) => {
+        groups[entry.departmentId] = [...(groups[entry.departmentId] || []), entry];
+        return groups;
+      }, {}),
+    []
+  );
 
   useEffect(() => {
     const saved = window.localStorage.getItem(variant.storageKey);
@@ -44,7 +62,7 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
     }
 
     setHasLoaded(true);
-  }, [variant.storageKey]);
+  }, [criterionIds, variant.metaConfig.productFormOptions, variant.storageKey]);
 
   useEffect(() => {
     if (hasLoaded) {
@@ -53,30 +71,34 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
   }, [draft, hasLoaded, variant.storageKey]);
 
   const totalPoints = useMemo(
-    () => calculateTotalPoints(draft.scores, variant.criteria),
-    [draft.scores, variant.criteria]
+    () => calculateTotalPoints(draft.scores, criterionIds),
+    [criterionIds, draft.scores]
   );
   const grade = useMemo(() => calculateGrade(totalPoints, maxPoints), [maxPoints, totalPoints]);
   const completedCriteria = useMemo(
-    () => getCompletedCriteriaCount(draft.scores, variant.criteria),
-    [draft.scores, variant.criteria]
+    () => getCompletedCriteriaCount(draft.scores, criterionIds),
+    [criterionIds, draft.scores]
   );
   const validationErrors = useMemo(
-    () => validateAssessment(draft, variant.criteria),
-    [draft, variant.criteria]
+    () => validateAssessment(draft, criterionIds, variant.metaLabels),
+    [criterionIds, draft, variant.metaLabels]
   );
 
   const handleClear = () => {
-    const nextDraft = createEmptyDraft();
+    const nextDraft = createEmptyDraft(criterionIds, {
+      productForm: variant.metaConfig.productFormOptions[0]
+    });
     setDraft(nextDraft);
     window.localStorage.setItem(variant.storageKey, JSON.stringify(nextDraft));
   };
 
   const handleWordExport = () => {
     const documentHtml = buildWordDocumentHtml(draft, totalPoints, grade, {
-      criteria: visibleCriteria,
+      criteria: variant.criteria,
       maxPoints,
-      documentTitle: variant.exportLabel
+      documentTitle: variant.exportLabel,
+      metaLabels: variant.metaLabels,
+      feedbackPrompts: variant.feedbackPrompts
     });
     const blob = new Blob([documentHtml], { type: "application/msword;charset=utf-8" });
     const url = window.URL.createObjectURL(blob);
@@ -95,25 +117,39 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
         <header className="rounded-lg border border-ink/10 bg-white p-5 shadow-soft">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-wide text-clay">Maturlektüre</p>
+              <p className="text-sm font-bold uppercase tracking-wide text-clay">
+                {variant.departmentLabel}
+              </p>
               <h1 className="mt-1 text-3xl font-bold text-ink sm:text-4xl">{variant.title}</h1>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {allVariants.map((entry) => {
-                  const active = entry.id === variant.id;
-                  return (
-                    <Link
-                      key={entry.id}
-                      href={entry.href}
-                      className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
-                        active
-                          ? "bg-ink text-white"
-                          : "border border-ink/12 bg-paper text-ink hover:border-clay hover:text-clay"
-                      }`}
-                    >
-                      {entry.navLabel}
-                    </Link>
-                  );
-                })}
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {Object.values(variantsByDepartment).map((entries) => (
+                  <div
+                    key={entries[0].departmentId}
+                    className="rounded-md border border-ink/10 bg-paper/70 p-3"
+                  >
+                    <div className="text-xs font-bold uppercase tracking-wide text-moss">
+                      {entries[0].departmentLabel}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {entries.map((entry) => {
+                        const active = entry.id === variant.id;
+                        return (
+                          <Link
+                            key={entry.id}
+                            href={entry.href}
+                            className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                              active
+                                ? "bg-ink text-white"
+                                : "border border-ink/12 bg-white text-ink hover:border-clay hover:text-clay"
+                            }`}
+                          >
+                            {entry.navLabel}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             <p className="max-w-2xl rounded-md bg-paper px-4 py-3 text-sm font-semibold leading-6 text-ink">
@@ -126,16 +162,18 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
           <div className="space-y-5">
             <MetaForm
               meta={draft.meta}
+              config={variant.metaConfig}
               onChange={(meta) => setDraft((current) => ({ ...current, meta }))}
             />
 
             <section className="space-y-5">
-              {visibleCriteria.map((criterion) => (
+              {variant.criteria.map((criterion) => (
                 <RubricCard
                   key={criterion.id}
                   criterion={criterion}
-                  score={draft.scores[criterion.id]}
-                  comment={draft.criterionComments[criterion.id]}
+                  score={draft.scores[criterion.id] ?? null}
+                  comment={draft.criterionComments[criterion.id] ?? ""}
+                  commentBlocks={variant.commentBlocks}
                   onScoreChange={(score) =>
                     setDraft((current) => ({
                       ...current,
@@ -157,6 +195,7 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
 
             <FeedbackSection
               feedback={draft.feedback}
+              prompts={variant.feedbackPrompts}
               onChange={(feedback) => setDraft((current) => ({ ...current, feedback }))}
             />
           </div>
@@ -165,7 +204,7 @@ export function AssessmentTool({ variant }: AssessmentToolProps) {
             <SummaryPanel
               totalPoints={totalPoints}
               maxPoints={maxPoints}
-              totalCriteria={variant.criteria.length}
+              totalCriteria={criterionIds.length}
               grade={grade}
               completedCriteria={completedCriteria}
               validationErrors={validationErrors}

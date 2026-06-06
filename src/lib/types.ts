@@ -6,16 +6,12 @@ export type ProductForm =
   | "digitale Lernlandschaft / Game"
   | "Collage / Poster"
   | "Essay"
+  | "Videoreportage"
   | "anderes Format";
 
-export type RubricScore = 1 | 2 | 3 | 4;
+export type RubricScore = number;
 
-export type CriterionId =
-  | "textkenntnis"
-  | "deutung"
-  | "idee"
-  | "ausarbeitung"
-  | "reflexion";
+export type CriterionId = string;
 
 export type ScoreMap = Record<CriterionId, RubricScore | null>;
 
@@ -26,6 +22,34 @@ export type FeedbackFields = {
   lesart: string;
   gewinn: string;
   gesamteindruck: string;
+};
+
+export type FeedbackPrompt = {
+  key: keyof FeedbackFields;
+  label: string;
+};
+
+export type MetaFieldLabels = {
+  readingTitle: string;
+  author: string;
+  productForm: string;
+  productTitle: string;
+  customProductForm: string;
+};
+
+export type MetaFieldConfig = {
+  intro: string;
+  readingTitleLabel: string;
+  readingTitlePlaceholder: string;
+  authorLabel: string;
+  authorPlaceholder: string;
+  productFormLabel: string;
+  productTitleLabel: string;
+  productTitlePlaceholder: string;
+  customProductFormLabel: string;
+  productFormOptions: ProductForm[];
+  hideProductForm?: boolean;
+  productFormLocked?: boolean;
 };
 
 export type AssessmentMeta = {

@@ -1,5 +1,5 @@
 import { rubricCriteria } from "./rubric";
-import type { AssessmentDraft, CriterionId, ScoreMap } from "./types";
+import type { AssessmentDraft, CriterionId, MetaFieldLabels, ScoreMap } from "./types";
 
 export const maxPoints = 20;
 const allCriterionIds = rubricCriteria.map((criterion) => criterion.id);
@@ -26,14 +26,22 @@ export function getCompletedCriteriaCount(
   scores: ScoreMap,
   criteria: CriterionId[] = allCriterionIds
 ): number {
-  return criteria.filter((criterionId) => scores[criterionId] !== null).length;
+  return criteria.filter((criterionId) => scores[criterionId] != null).length;
 }
 
 export function validateAssessment(
   draft: AssessmentDraft,
-  criteria: CriterionId[] = allCriterionIds
+  criteria: CriterionId[] = allCriterionIds,
+  metaLabels?: Partial<MetaFieldLabels>
 ): string[] {
   const errors: string[] = [];
+  const labels = {
+    readingTitle: metaLabels?.readingTitle || "Titel der Lektüre",
+    author: metaLabels?.author || "Autorin oder Autor",
+    productForm: metaLabels?.productForm || "Produktform",
+    productTitle: metaLabels?.productTitle || "Titel des Lernprodukts",
+    customProductForm: metaLabels?.customProductForm || "Anderes Format"
+  };
 
   if (!draft.meta.studentName.trim()) {
     errors.push("Name der Schülerin oder des Schülers fehlt.");
@@ -44,15 +52,15 @@ export function validateAssessment(
   }
 
   if (!draft.meta.readingTitle.trim()) {
-    errors.push("Titel der Lektüre fehlt.");
+    errors.push(`${labels.readingTitle} fehlt.`);
   }
 
   if (!draft.meta.author.trim()) {
-    errors.push("Autorin oder Autor fehlt.");
+    errors.push(`${labels.author} fehlt.`);
   }
 
   if (draft.meta.productForm === "anderes Format" && !draft.meta.customProductForm.trim()) {
-    errors.push("Das andere Format muss kurz benannt werden.");
+    errors.push(`${labels.customProductForm} muss kurz benannt werden.`);
   }
 
   if (!draft.meta.assessmentDate) {

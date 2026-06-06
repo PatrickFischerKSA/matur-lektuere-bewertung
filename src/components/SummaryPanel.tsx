@@ -23,7 +23,8 @@ export function SummaryPanel({
   onClear,
   onExportWord
 }: SummaryPanelProps) {
-  const scaleRows = Array.from({ length: 7 }, (_, index) => maxPoints - index * 2)
+  const scaleStep = Math.max(1, Math.round(maxPoints / 10));
+  const scaleRows = Array.from({ length: 7 }, (_, index) => maxPoints - index * scaleStep)
     .filter((points) => points >= 0)
     .map((points) => ({
       points,

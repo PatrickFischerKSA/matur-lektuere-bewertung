@@ -39,6 +39,27 @@ describe("Punkte- und Notenberechnung", () => {
     expect(calculateGrade(10, 16)).toBe(4.1);
   });
 
+  it("berechnet die Videoreportage-Note auf 30 Punkten korrekt", () => {
+    const scores: ScoreMap = {
+      bildgestaltung: 6,
+      "ton-verstaendlichkeit": 5,
+      "schnitt-technik": 4,
+      "kreativitaet-wirkung": 3,
+      "arbeitsprozess-zusammenarbeit": 2
+    };
+
+    expect(
+      calculateTotalPoints(scores, [
+        "bildgestaltung",
+        "ton-verstaendlichkeit",
+        "schnitt-technik",
+        "kreativitaet-wirkung",
+        "arbeitsprozess-zusammenarbeit"
+      ])
+    ).toBe(20);
+    expect(calculateGrade(20, 30)).toBe(4.3);
+  });
+
   it("berechnet die Note mit der Formel Punkte / 20 * 5 + 1", () => {
     expect(calculateGrade(20)).toBe(6.0);
     expect(calculateGrade(18)).toBe(5.5);
@@ -92,11 +113,47 @@ describe("Validierung und Kommentare", () => {
     ).toEqual([]);
   });
 
+  it("nutzt variantenspezifische Feldbezeichnungen in der Validierung", () => {
+    const draft = createEmptyDraft([
+      "bildgestaltung",
+      "ton-verstaendlichkeit",
+      "schnitt-technik",
+      "kreativitaet-wirkung",
+      "arbeitsprozess-zusammenarbeit"
+    ]);
+
+    expect(
+      validateAssessment(
+        draft,
+        [
+          "bildgestaltung",
+          "ton-verstaendlichkeit",
+          "schnitt-technik",
+          "kreativitaet-wirkung",
+          "arbeitsprozess-zusammenarbeit"
+        ],
+        {
+          readingTitle: "Titel der Videoreportage",
+          author: "Thema / Fokus",
+          productForm: "Produktform",
+          productTitle: "Team / Gruppe",
+          customProductForm: "Anderes Format"
+        }
+      )
+    ).toEqual(
+      expect.arrayContaining([
+        "Titel der Videoreportage fehlt.",
+        "Thema / Fokus fehlt.",
+        "Alle 5 Kriterien brauchen eine Punktestufe."
+      ])
+    );
+  });
+
   it("validiert das freie Formatfeld", () => {
     const draft = createEmptyDraft();
     draft.meta.productForm = "anderes Format";
 
-    expect(validateAssessment(draft)).toContain("Das andere Format muss kurz benannt werden.");
+    expect(validateAssessment(draft)).toContain("Anderes Format muss kurz benannt werden.");
   });
 
   it("fügt Kommentarbausteine lesbar an", () => {
